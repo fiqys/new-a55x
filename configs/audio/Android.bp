@@ -39,9 +39,3 @@ prebuilt_etc {
     src: "mixer_paths.xml",
     vendor: true,
 }
-
-prebuilt_etc {
-    name: "mixer_gains.xml",
-    src: "mixer_gains.xml",
-    vendor: true,
-}

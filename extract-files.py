@@ -138,6 +138,34 @@ blob_fixups: blob_fixups_user_type = {
         .binary_regex_replace(rb'ro\.factory\.factory_binary', b'ro.vendor.factory_binary\x00'),
     'vendor/bin/vaultkeeperd': blob_fixup()
         .binary_regex_replace(rb'ro\.factory\.factory_binary', b'ro.vendor.factory_binary\x00'),
+    # Audio - Effects
+    'vendor/etc/floating_feature.xml': blob_fixup().regex_replace(
+        r'(?m)^</SecFloatingFeatureSet>$',
+        '    <SEC_FLOATING_FEATURE_AUDIO_CONFIG_SOUNDBOOSTER_LIB_VERSION>2000</SEC_FLOATING_FEATURE_AUDIO_CONFIG_SOUNDBOOSTER_LIB_VERSION>\n'
+        '    <SEC_FLOATING_FEATURE_AUDIO_SUPPORT_SOUNDBOOSTER_ON_DSP>TRUE</SEC_FLOATING_FEATURE_AUDIO_SUPPORT_SOUNDBOOSTER_ON_DSP>\n'
+        '</SecFloatingFeatureSet>',
+    ),
+    'vendor/lib64/soundfx/libsamsungSoundbooster_plus.so': blob_fixup()
+        # Fix SB_init state initialization:
+        # Before: [bl <fn>][mov w8,#2]
+        # After:  [bl <fn>][mov w8,#1]
+        .sig_replace('bf 01 00 94 48 00 80 52', 'bf 01 00 94 28 00 80 52')
+        # Fix SB_process copy size for float stereo PCM
+        # Before: [lsl x2,x8,#2]
+        # After:  [lsl x2,x8,#3]
+        .sig_replace('02 f5 7e d3', '02 f1 7d d3')
+        # Reorder SB_process check to execute a clean memcpy bypass on non-speaker devices
+        # Before: [ldrb w9; cbz w9, 10d04; mov x20, x1; cbz x1, 10cec; mov x19, x2]
+        # After:  [mov x20, x1; mov x19, x2; ldrb w9; cbz w9, 10d04; cbz x1, 10cec]
+        .sig_replace(
+            'a9 52 42 39 a9 06 00 34 f4 03 01 aa a1 05 00 b4 f3 03 02 aa',
+            'f4 03 01 aa f3 03 02 aa a9 52 42 39 69 06 00 34 81 05 00 b4',
+        ),
+    'vendor/lib64/soundfx/libaudiosaplus_sec.so': blob_fixup()
+        # Fix default device initialization to trigger Set_Speaker_Output on setDevice(2)
+        # Before: [format 5, device 2]
+        # After: [format 5, device 0]
+        .sig_replace('05 00 00 00 02 00 00 00', '05 00 00 00 00 00 00 00'),
 }  # fmt: skip
 
 module = ExtractUtilsModule(

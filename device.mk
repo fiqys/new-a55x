@@ -51,6 +51,7 @@ PRODUCT_PACKAGES += \
     audio.bluetooth.default \
     android.hardware.bluetooth.audio-impl \
     audio.r_submix.default \
+    audio.primary.s5e8845 \
     audio.usbv2.default
 
 PRODUCT_PACKAGES += \
@@ -58,7 +59,6 @@ PRODUCT_PACKAGES += \
     audio_board_info.xml \
     audio_policy_configuration.xml \
     audio_policy_volumes.xml \
-    mixer_gains.xml \
     mixer_paths.xml \
     usbv2_audio_policy_configuration.xml
 
@@ -68,6 +68,19 @@ PRODUCT_COPY_FILES += \
     frameworks/av/services/audiopolicy/config/bluetooth_audio_policy_configuration_7_0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/bluetooth_audio_policy_configuration_7_0.xml
 
 TARGET_EXCLUDES_AUDIOFX := true
+
+# Audio
+$(call soong_config_set_bool,exynos_audio,support_direct_multi_channel_stream,true)
+$(call soong_config_set_bool,exynos_audio,use_offload_effect_library,true)
+$(call soong_config_set_bool,exynos_audio,use_sec_audio_dynamic_nrec,true)
+$(call soong_config_set_bool,exynos_audio,use_sec_audio_samsungrecord,true)
+$(call soong_config_set_bool,exynos_audio,use_sec_audio_sound_trigger_enabled,true)
+$(call soong_config_set_bool,exynos_audio,use_sec_audio_support_gamechat_spk_aec,true)
+$(call soong_config_set_bool,exynos_audio,use_sec_audio_support_listenback_dspeffect,true)
+$(call soong_config_set_bool,exynos_audio,use_soundtrigger_hal,true)
+$(call soong_config_set_bool,exynos_audio,use_usb_offload,false)
+$(call soong_config_set,exynos_audio,proxy_header,//$(LOCAL_PATH):audio_proxy_headers)
+$(call soong_config_set,exynos_audio,sec_resampler_library,//vendor/samsung/a55x:libSamsungPostProcessConvertor)
 
 # Bluetooth
 PRODUCT_PACKAGES += \
@@ -327,7 +340,9 @@ PRODUCT_SOONG_NAMESPACES += \
     hardware/google/pixel \
     hardware/samsung \
     hardware/samsung_slsi-linaro/exynos/cpboot_v3 \
-    hardware/samsung_slsi/libbt
+    hardware/samsung_slsi/libbt \
+    hardware/samsung_slsi-linaro/exynos/libaudio/audiohal_comv1 \
+    hardware/samsung_slsi-linaro/exynos/libaudio/audiohal_comv1/proxy
 
 # Thermal
 PRODUCT_PACKAGES += \
